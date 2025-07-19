@@ -1,45 +1,107 @@
 <?php
-$host = "localhost";
-$user = "root";
-$password = "";
-$dbname = "gogalse"; // Use your DB name
+// insert_admin.php
+include 'db.php';
 
-$conn = new mysqli($host, $user, $password, $dbname);
+$message = "";
 
-if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
-}
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+    $pname = trim($_POST['pname']);
+    $price = trim($_POST['price']);
 
-// Handle form
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-  $product_name = $_POST['product_name'];
-  $price = $_POST['price'];
+    // Validate input
+    if (!empty($pname) && is_numeric($price) && isset($_FILES['image'])) {
+        $image = $_FILES['image']['name'];
+        $image_tmp = $_FILES['image']['tmp_name'];
+        $upload_dir = 'uploads/';
 
-  // Upload image
-  $target_dir = "uploads/";
-  if (!is_dir($target_dir)) {
-    mkdir($target_dir);
-  }
+        if (!is_dir($upload_dir)) {
+            mkdir($upload_dir, 0777, true);
+        }
 
-  $image_name = basename($_FILES["image"]["name"]);
-  $target_file = $target_dir . time() . "_" . $image_name;
+        $target = $upload_dir . basename($image);
 
-  if (move_uploaded_file($_FILES["image"]["tmp_name"], $target_file)) {
-    $sql = "INSERT INTO products (image, product_name, price) VALUES (?, ?, ?)";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("ssi", $target_file, $product_name, $price);
+        if (move_uploaded_file($image_tmp, $target)) {
+            // Use prepared statements for security
+            $stmt = $conn->prepare("INSERT INTO products (pname, price, image) VALUES (?, ?, ?)");
+            $stmt->bind_param("sss", $pname, $price, $image);
 
-    if ($stmt->execute()) {
-      echo "Product added successfully!";
+            if ($stmt->execute()) {
+                $message = "<div class='alert alert-success text-center'>✅ Product added successfully!</div>";
+                // Optionally redirect to product page
+                // header("Refresh: 2; url=product.php");
+            } else {
+                $message = "<div class='alert alert-danger text-center'>❌ Database Error: " . $stmt->error . "</div>";
+            }
+            $stmt->close();
+        } else {
+            $message = "<div class='alert alert-warning text-center'>❌ Failed to upload image.</div>";
+        }
     } else {
-      echo "Error: " . $stmt->error;
+        $message = "<div class='alert alert-warning text-center'>⚠️ Please fill all fields correctly.</div>";
     }
-
-    $stmt->close();
-  } else {
-    echo "Image upload failed.";
-  }
 }
-
-$conn->close();
 ?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Product | IMPETUS</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        .container {
+            max-width: 600px;
+            margin-top: 60px;
+            padding: 30px;
+            background: #fff;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            border-radius: 16px;
+        }
+        .btn-custom {
+            background-color: #0b2f18;
+            color: #fff;
+            border-radius: 12px;
+            font-weight: bold;
+        }
+        .btn-custom:hover {
+            background-color: #094a27;
+        }
+        h2 {
+            color: #0b2f18;
+        }
+    </style>
+</head>
+<body>
+
+<?php include 'head.php'; ?>
+
+<div class="container">
+    <h2 class="text-center mb-4">➕ Add New Product</h2>
+
+    <?= $message; ?>
+
+    <form action="" method="post" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="pname" class="form-label">Product Name</label>
+            <input type="text" name="pname" id="pname" class="form-control" required>
+        </div>
+        <div class="mb-3">
+            <label for="price" class="form-label">Price (₹)</label>
+            <input type="number" name="price" id="price" class="form-control" step="0.01" required>
+        </div>
+        <div class="mb-3">
+            <label for="image" class="form-label">Upload Image</label>
+            <input type="file" name="image" id="image" class="form-control" accept="image/*" required>
+        </div>
+        <button type="submit" class="btn btn-custom w-100">Add Product</button>
+    </form>
+</div>
+
+</body>
+</html>
