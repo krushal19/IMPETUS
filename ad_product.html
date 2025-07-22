@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lubricon Admin - Product Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #1a365d;
+            --secondary: #2c5282;
+            --accent: #ed8936;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7fafc;
+        }
+        
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        
+        .status-active {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-discontinued {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+        
+        table.dataTable tbody tr {
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        table.dataTable tbody tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <div class="sidebar fixed inset-y-0 left-0 bg-[color:var(--primary)] text-white w-64 z-50">
+            <div class="flex items-center justify-center h-16 px-4 border-b border-gray-700">
+                <div class="flex items-center space-x-2">
+                    <img src="https://placehold.co/40x40" alt="Lubricon oil company logo featuring a stylized oil drop with blue and orange gradient" class="rounded-full">
+                    <span class="text-xl font-bold">Lubricon Admin</span>
+                </div>
+            </div>
+            <div class="overflow-y-auto h-full py-4">
+                <nav>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:bg-[color:var(--secondary)]">
+                        <i class="fas fa-tachometer-alt mr-3"></i>
+                        Dashboard
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-white bg-[color:var(--secondary)]">
+                        <i class="fas fa-oil-can mr-3"></i>
+                        Products
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:bg-[color:var(--secondary)]">
+                        <i class="fas fa-shopping-cart mr-3"></i>
+                        Orders
+                    </a>
+                    <a href="#" class="flex items-center px-4 py-3 text-gray-300 hover:bg-[color:var(--secondary)]">
+                        <i class="fas fa-users mr-3"></i>
+                        Customers
+                    </a>
+                    <!-- Additional navigation items -->
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="flex-1 overflow-auto ml-0 md:ml-64 transition-all duration-300">
+            <!-- Top navbar -->
+            <div class="bg-white shadow-sm">
+                <div class="flex items-center justify-between px-4 py-3">
+                    <h1 class="text-xl font-semibold">Product Management</h1>
+                    <div class="flex items-center space-x-4">
+                        <!-- Notification and user dropdown -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main content area -->
+            <div class="p-4 md:p-6">
+                <!-- Action bar -->
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                    <div class="w-full md:w-auto">
+                        <div class="relative">
+                            <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                            <input type="text" placeholder="Search products..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-md w-full md:w-64 focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]">
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2 w-full md:w-auto">
+                        <div class="relative">
+                            <select class="appearance-none bg-gray-100 border border-gray-300 rounded-md px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]">
+                                <option>All Categories</option>
+                                <option>Synthetic Oil</option>
+                                <option>Conventional Oil</option>
+                                <option>High Mileage</option>
+                                <option>Diesel Oil</option>
+                                <option>Motorcycle Oil</option>
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-3 top-3 text-xs text-gray-500"></i>
+                        </div>
+                        <div class="relative">
+                            <select class="appearance-none bg-gray-100 border border-gray-300 rounded-md px-3 py-2 pr-8 text-sm focus:outline-none focus:ring-2 focus:ring-[color:var(--accent)]">
+                                <option>All Status</option>
+                                <option>Active</option>
+                                <option>Discontinued</option>
+                                <option>Backordered</option>
+                            </select>
+                            <i class="fas fa-chevron-down absolute right-3 top-3 text-xs text-gray-500"></i>
+                        </div>
+                        <button class="bg-[color:var(--primary)] text-white px-4 py-2 rounded-md hover:bg-[color:var(--secondary)] flex items-center">
+                            <i class="fas fa-plus mr-2"></i>
+                            Add Product
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Products table -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <!-- Product 1 -->
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img src="https://placehold.co/40x40" alt="Synthetic 5W-30 engine oil in blue bottle with silver cap" class="h-10 w-10 rounded-md">
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Full Synthetic 5W-30</div>
+                                                <div class="text-sm text-gray-500">1 Quart Bottle</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">LUB-SYN-5W30-1QT</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Synthetic Oil</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <div class="flex items-center">
+                                            <span>142</span>
+                                            <div class="ml-2 w-24 bg-gray-200 rounded-full h-2.5">
+                                                <div class="bg-green-600 h-2.5 rounded-full" style="width: 65%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">$24.99</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-active">
+                                            Active
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="dropdown relative inline-block">
+                                            <button class="text-gray-400 hover:text-gray-600">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <i class="fas fa-edit mr-2"></i> Edit
+                                                </a>
+                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <i class="fas fa-copy mr-2"></i> Duplicate
+                                                </a>
+                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <i class="fas fa-box-open mr-2"></i> Inventory
+                                                </a>
+                                                <div class="border-t border-gray-200"></div>
+                                                <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                                    <i class="fas fa-trash mr-2"></i> Delete
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Product 2 -->
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img src="https://placehold.co/40x40" alt="High mileage 10W-40 engine oil in gold bottle with red label" class="h-10 w-10 rounded-md">
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">High Mileage 10W-40</div>
+                                                <div class="text-sm text-gray-500">5 Quart Jug</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">LUB-HM-10W40-5QT</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">High Mileage</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <div class="flex items-center">
+                                            <span>87</span>
+                                            <div class="ml-2 w-24 bg-gray-200 rounded-full h-2.5">
+                                                <div class="bg-yellow-500 h-2.5 rounded-full" style="width: 45%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">$34.99</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-active">
+                                            Active
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="dropdown relative inline-block">
+                                            <button class="text-gray-400 hover:text-gray-600">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <i class="fas fa-edit mr-2"></i> Edit
+                                                </a>
+                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <i class="fas fa-copy mr-2"></i> Duplicate
+                                                </a>
+                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <i class="fas fa-box-open mr-2"></i> Inventory
+                                                </a>
+                                                <div class="border-t border-gray-200"></div>
+                                                <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                                    <i class="fas fa-trash mr-2"></i> Delete
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Product 3 -->
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img src="https://placehold.co/40x40" alt="Diesel engine oil 15W-40 in industrial silver container with black label" class="h-10 w-10 rounded-md">
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Diesel Truck 15W-40</div>
+                                                <div class="text-sm text-gray-500">1 Gallon Jug</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">LUB-DSL-15W40-GAL</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Diesel Oil</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <div class="flex items-center">
+                                            <span>0</span>
+                                            <div class="ml-2 w-24 bg-gray-200 rounded-full h-2.5">
+                                                <div class="bg-red-500 h-2.5 rounded-full" style="width: 0%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">$29.99</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                            Out of Stock
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="dropdown relative inline-block">
+                                            <button class="text-gray-400 hover:text-gray-600">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <i class="fas fa-edit mr-2"></i> Edit
+                                                </a>
+                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <i class="fas fa-copy mr-2"></i> Duplicate
+                                                </a>
+                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <i class="fas fa-box-open mr-2"></i> Inventory
+                                                </a>
+                                                <div class="border-t border-gray-200"></div>
+                                                <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                                    <i class="fas fa-trash mr-2"></i> Delete
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Product 4 -->
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img src="https://placehold.co/40x40" alt="Motorcycle oil 10W-40 in slim bottle with black and orange racing stripes" class="h-10 w-10 rounded-md">
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Motorcycle 10W-40</div>
+                                                <div class="text-sm text-gray-500">1 Quart Bottle</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">LUB-MC-10W40-1QT</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Motorcycle Oil</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <div class="flex items-center">
+                                            <span>56</span>
+                                            <div class="ml-2 w-24 bg-gray-200 rounded-full h-2.5">
+                                                <div class="bg-orange-500 h-2.5 rounded-full" style="width: 30%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">$12.99</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                            Low Stock
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="dropdown relative inline-block">
+                                            <button class="text-gray-400 hover:text-gray-600">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <i class="fas fa-edit mr-2"></i> Edit
+                                                </a>
+                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <i class="fas fa-copy mr-2"></i> Duplicate
+                                                </a>
+                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <i class="fas fa-box-open mr-2"></i> Inventory
+                                                </a>
+                                                <div class="border-t border-gray-200"></div>
+                                                <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                                    <i class="fas fa-trash mr-2"></i> Delete
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                
+                                <!-- Product 5 -->
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10">
+                                                <img src="https://placehold.co/40x40" alt="Conventional 10W-30 motor oil in traditional yellow bottle with green label" class="h-10 w-10 rounded-md">
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900">Conventional 10W-30</div>
+                                                <div class="text-sm text-gray-500">5 Quart Jug</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">LUB-CNV-10W30-5QT</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">Conventional Oil</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <div class="flex items-center">
+                                            <span>214</span>
+                                            <div class="ml-2 w-24 bg-gray-200 rounded-full h-2.5">
+                                                <div class="bg-green-500 h-2.5 rounded-full" style="width: 75%"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">$19.99</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full status-active">
+                                            Active
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="dropdown relative inline-block">
+                                            <button class="text-gray-400 hover:text-gray-600">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div class="dropdown-menu hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <i class="fas fa-edit mr-2"></i> Edit
+                                                </a>
+                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <i class="fas fa-copy mr-2"></i> Duplicate
+                                                </a>
+                                                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                                    <i class="fas fa-box-open mr-2"></i> Inventory
+                                                </a>
+                                                <div class="border-t border-gray-200"></div>
+                                                <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">
+                                                    <i class="fas fa-trash mr-2"></i> Delete
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                        <div class="flex-1 flex justify-between sm:hidden">
+                            <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Previous
+                            </a>
+                            <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                Next
+                            </a>
+                        </div>
+                        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-sm text-gray-700">
+                                    Showing <span class="font-medium">1</span> to <span class="font-medium">5</span> of <span class="font-medium">28</span> products
+                                </p>
+                            </div>
+                            <div>
+                                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                        <span class="sr-only">Previous</span>
+                                        <i class="fas fa-chevron-left"></i>
+                                    </a>
+                                    <a href="#" aria-current="page" class="z-10 bg-[color:var(--primary)] border-[color:var(--primary)] text-white relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                        1
+                                    </a>
+                                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                        2
+                                    </a>
+                                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                        3
+                                    </a>
+                                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                        <span class="sr-only">Next</span>
+                                        <i class="fas fa-chevron-right"></i>
+                                    </a>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize dropdown functionality
+        document.querySelectorAll('.dropdown').forEach(dropdown => {
+            const button = dropdown.querySelector('button');
+            
+            button.addEventListener('click', () => {
+                const menu = dropdown.querySelector('.dropdown-menu');
+                menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+            });
+        });
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.dropdown')) {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.style.display = 'none';
+                });
+            }
+        });
+
+        // Mobile sidebar toggle
+        document.querySelectorAll('.fa-bars').forEach(button => {
+            button.addEventListener('click', () => {
+                document.querySelector('.sidebar').classList.toggle('open');
+            });
+        });
+    </script>
+</body>
+</html>
